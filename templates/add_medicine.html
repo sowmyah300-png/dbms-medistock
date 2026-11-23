@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit medicine' if medicine else 'Add medicine' }} · MediStock{% endblock %}
+{% block page_heading %}{{ 'Edit medicine batch' if medicine else 'Add medicine' }}{% endblock %}
+{% block content %}
+<div class="page-intro"><div><p class="eyebrow">BATCH DETAILS</p><h2 class="section-title">{{ 'Update medicine batch' if medicine else 'Register a new batch' }}</h2><p class="muted">Keep batch dates and quantity accurate for better stock tracking.</p></div><a class="btn btn-ghost" href="{{ url_for('medicines') }}">← Back to inventory</a></div>
+<section class="card form-card">
+    <form method="post" action="{{ url_for('edit_medicine', medicine_id=medicine.id) if medicine else url_for('add_medicine') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="form-grid">
+            <div class="form-group"><label for="name">Medicine name <span class="required">*</span></label><input id="name" name="name" maxlength="150" required placeholder="e.g. Paracetamol 500 mg" value="{{ request.form.get('name', medicine.name if medicine else '') }}"></div>
+            <div class="form-group"><label for="category">Category <span class="required">*</span></label><select id="category" name="category" required>{% for item in categories %}<option value="{{ item }}" {{ 'selected' if request.form.get('category', medicine.category if medicine else 'Tablet') == item else '' }}>{{ item }}</option>{% endfor %}</select></div>
+            <div class="form-group"><label for="manufacturer">Manufacturer <span class="required">*</span></label><input id="manufacturer" name="manufacturer" maxlength="150" required placeholder="e.g. Sunrise Pharmaceuticals" value="{{ request.form.get('manufacturer', medicine.manufacturer if medicine else '') }}"></div>
+            <div class="form-group"><label for="batch_number">Batch number <span class="required">*</span></label><input id="batch_number" name="batch_number" maxlength="80" required placeholder="e.g. MS-2026-001" value="{{ request.form.get('batch_number', medicine.batch_number if medicine else '') }}"></div>
+            <div class="form-group"><label for="manufacturing_date">Manufacturing date <span class="required">*</span></label><input id="manufacturing_date" name="manufacturing_date" type="date" required value="{{ request.form.get('manufacturing_date', medicine.manufacturing_date.isoformat() if medicine and medicine.manufacturing_date else '') }}"></div>
+            <div class="form-group"><label for="expiry_date">Expiry date <span class="required">*</span></label><input id="expiry_date" name="expiry_date" type="date" required value="{{ request.form.get('expiry_date', medicine.expiry_date.isoformat() if medicine and medicine.expiry_date else '') }}"></div>
+            <div class="form-group"><label for="quantity">{{ 'Current quantity' if medicine else 'Initial quantity' }} <span class="required">*</span></label><input id="quantity" name="quantity" type="number" min="0" step="1" required value="{{ request.form.get('quantity', medicine.quantity if medicine else '0') }}"><small class="field-help">{% if medicine %}For recorded adjustments, use Stock Management to keep the transaction history complete.{% else %}Initial stock is recorded in the stock movement history.{% endif %}</small></div>
+            <div class="form-group"><label for="unit_price">Unit price (₹) <span class="required">*</span></label><input id="unit_price" name="unit_price" type="number" min="0" max="99999999.99" step="0.01" required placeholder="0.00" value="{{ request.form.get('unit_price', medicine.unit_price if medicine else '') }}"></div>
+            <div class="form-group full-width"><label for="supplier_id">Supplier</label><select id="supplier_id" name="supplier_id"><option value="">No supplier assigned</option>{% for supplier in suppliers %}<option value="{{ supplier.id }}" {{ 'selected' if request.form.get('supplier_id', medicine.supplier_id if medicine and medicine.supplier_id else '')|string == supplier.id|string else '' }}>{{ supplier.supplier_name }} — {{ supplier.company_name }}</option>{% endfor %}</select>{% if not suppliers %}<small class="field-help">No suppliers registered yet. You can add one from the Suppliers page.</small>{% endif %}</div>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary" type="submit">{{ 'Save changes' if medicine else 'Save medicine batch' }}</button><a class="btn btn-secondary" href="{{ url_for('medicines') }}">Cancel</a></div>
+    </form>
+</section>
+{% endblock %}

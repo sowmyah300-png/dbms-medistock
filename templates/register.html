@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Create account · MediStock{% endblock %}
+{% block auth_content %}
+<section class="auth-card">
+    <div class="form-mark">✚</div>
+    <p class="eyebrow">GET YOUR TEAM STARTED</p>
+    <h2>Create your account</h2>
+    <p class="auth-subtitle">Register as a MediStock operator.</p>
+    <form method="post" action="{{ url_for('register') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="form-group">
+            <label for="full_name">Full name</label>
+            <input id="full_name" name="full_name" type="text" autocomplete="name" required maxlength="120" value="{{ request.form.get('full_name', '') }}">
+        </div>
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" autocomplete="username" required minlength="3" maxlength="50" pattern="[A-Za-z0-9_.-]{3,50}" value="{{ request.form.get('username', '') }}">
+        </div>
+        <div class="form-group">
+            <label for="email">Email address</label>
+            <input id="email" name="email" type="email" autocomplete="email" required maxlength="254" value="{{ request.form.get('email', '') }}">
+        </div>
+        <div class="form-group">
+            <label for="password">Password <span class="label-hint">8+ characters</span></label>
+            <div class="password-wrapper">
+                <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+                <button class="toggle-password" type="button" aria-label="Show password" data-password-toggle="password">Show</button>
+            </div>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Create account <span aria-hidden="true">→</span></button>
+    </form>
+    <p class="auth-footer">Already registered? <a href="{{ url_for('login') }}">Sign in</a></p>
+</section>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · MediStock{% endblock %}
+{% block page_heading %}Inventory overview{% endblock %}
+{% block content %}
+<div class="welcome-row">
+    <div><p class="eyebrow">GOOD TO SEE YOU, {{ g.user.full_name|upper }}</p><h2 class="section-title">Your stock at a glance</h2><p class="muted">A live view of the medicines and supplies you manage.</p></div>
+    <a class="btn btn-primary" href="{{ url_for('stock') }}">＋ Record stock movement</a>
+</div>
+<section class="kpi-grid" aria-label="Inventory summary">
+    <article class="kpi-card"><div class="kpi-icon icon-teal">✚</div><div><span class="kpi-label">Medicine batches</span><strong class="kpi-value">{{ stats.total_medicines }}</strong></div><span class="kpi-decoration">01</span></article>
+    <article class="kpi-card"><div class="kpi-icon icon-cyan">▤</div><div><span class="kpi-label">Available units</span><strong class="kpi-value">{{ stats.total_stock }}</strong></div><span class="kpi-decoration">02</span></article>
+    <article class="kpi-card"><div class="kpi-icon icon-amber">!</div><div><span class="kpi-label">Low stock</span><strong class="kpi-value">{{ stats.low_stock }}</strong></div><span class="kpi-decoration">03</span></article>
+    <article class="kpi-card"><div class="kpi-icon icon-rose">◷</div><div><span class="kpi-label">Expired batches</span><strong class="kpi-value">{{ stats.expired }}</strong></div><span class="kpi-decoration">04</span></article>
+    <article class="kpi-card"><div class="kpi-icon icon-navy">⇄</div><div><span class="kpi-label">Suppliers</span><strong class="kpi-value">{{ stats.total_suppliers }}</strong></div><span class="kpi-decoration">05</span></article>
+</section>
+<div class="dashboard-grid">
+    <section class="card">
+        <div class="card-header"><div><p class="eyebrow">LATEST UPDATES</p><h2>Recent inventory activity</h2></div><a class="text-link" href="{{ url_for('stock') }}">View stock history →</a></div>
+        {% if activities %}
+        <div class="table-responsive"><table class="data-table">
+            <thead><tr><th>Medicine / batch</th><th>Movement</th><th>Quantity</th><th>Remarks</th><th>Operator</th><th>When</th></tr></thead>
+            <tbody>{% for item in activities %}
+                <tr><td><strong>{{ item.medicine_name }}</strong><small class="table-subtext">{{ item.batch_number }}</small></td>
+                <td><span class="badge {{ 'badge-success' if item.movement == 'IN' else 'badge-info' }}">{{ 'Received' if item.movement == 'IN' else 'Distributed' }}</span></td>
+                <td>{{ item.quantity }} units</td><td>{{ item.remarks or '—' }}</td><td>{{ item.operator_name or 'Former operator' }}</td><td>{{ item.created_at.strftime('%d %b %Y, %H:%M') }}</td></tr>
+            {% endfor %}</tbody>
+        </table></div>
+        {% else %}<div class="empty-state"><span>▤</span><strong>No stock activity yet</strong><p>Stock movements will appear here as you manage inventory.</p><a class="btn btn-secondary" href="{{ url_for('stock') }}">Manage stock</a></div>{% endif %}
+    </section>
+    <aside class="card dashboard-aside">
+        <div class="card-header"><div><p class="eyebrow">QUICK ACTIONS</p><h2>Keep things moving</h2></div></div>
+        <a class="quick-link" href="{{ url_for('add_medicine') }}"><span class="quick-icon">✚</span><span><strong>Add a medicine</strong><small>Register a new batch</small></span><b>→</b></a>
+        <a class="quick-link" href="{{ url_for('suppliers') }}"><span class="quick-icon cyan-bg">⇄</span><span><strong>Manage suppliers</strong><small>Update your supplier list</small></span><b>→</b></a>
+        <a class="quick-link" href="{{ url_for('reports') }}"><span class="quick-icon amber-bg">▧</span><span><strong>Open reports</strong><small>Review inventory health</small></span><b>→</b></a>
+        <div class="note-box"><strong>Stock reminder</strong><p>Medicines at {{ low_stock_threshold }} units or fewer are flagged as low stock.</p></div>
+    </aside>
+</div>
+{% endblock %}

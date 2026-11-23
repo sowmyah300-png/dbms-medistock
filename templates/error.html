@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Something went wrong · MediStock{% endblock %}
+{% block page_heading %}Unable to complete request{% endblock %}
+{% block content %}
+<section class="card error-card"><div class="kpi-icon icon-rose">!</div><h2>Something went wrong</h2><p>{{ message }}</p><a class="btn btn-primary" href="{{ url_for('dashboard') }}">Return to dashboard</a></section>
+{% endblock %}

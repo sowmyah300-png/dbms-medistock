@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediStock | Medical Inventory & Supply Chain Management</title>
+    <style>
+        :root {
+            --navy: #0f2942;
+            --navy-dark: #091a2c;
+            --teal: #0d9488;
+            --teal-hover: #0f766e;
+            --cyan: #06b6d4;
+            --bg-light: #f0f7ff;
+            --white: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 16px rgba(15, 41, 66, 0.07);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--bg-light); color: var(--text-dark); }
+
+        /* Utility */
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+
+        /* Split Auth View */
+        .auth-wrapper { display: flex; min-height: 100vh; width: 100%; }
+        .auth-left {
+            flex: 1; background: linear-gradient(145deg, var(--navy-dark), var(--navy));
+            color: var(--white); padding: 3rem; display: flex; flex-direction: column; justify-content: center;
+        }
+        .brand-header { display: flex; align-items: center; gap: 14px; margin-bottom: 1rem; }
+        .cross-badge {
+            background: var(--teal); color: white; width: 48px; height: 48px;
+            border-radius: 14px; display: grid; place-items: center; font-size: 1.6rem; font-weight: bold;
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4);
+        }
+        .tagline { color: #cbd5e1; font-size: 1.15rem; margin-bottom: 1.8rem; line-height: 1.5; }
+        .medical-illustration { max-width: 380px; width: 100%; margin: 0.5rem 0 2rem; }
+        .feature-highlights { list-style: none; display: grid; gap: 0.8rem; color: #99f6e4; font-size: 0.98rem; }
+
+        .auth-right { flex: 1; display: grid; place-items: center; padding: 2rem; background: var(--bg-light); }
+        .auth-card {
+            background: var(--white); padding: 2.5rem; border-radius: 18px;
+            box-shadow: var(--shadow); width: 100%; max-width: 430px;
+        }
+        .auth-card h2 { color: var(--navy); margin-bottom: 0.3rem; font-size: 1.6rem; }
+        .subtitle { color: var(--text-muted); margin-bottom: 1.6rem; font-size: 0.95rem; }
+        .password-wrapper { position: relative; }
+        .toggle-pw {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; cursor: pointer; font-size: 1.1rem;
+        }
+        .auth-footer { margin-top: 1.3rem; text-align: center; font-size: 0.9rem; color: var(--text-muted); }
+        .auth-footer a { color: var(--teal); font-weight: 600; text-decoration: none; cursor: pointer; }
+
+        /* Main Dashboard Layout */
+        .app-layout { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 255px; background: var(--navy); color: var(--white);
+            display: flex; flex-direction: column; flex-shrink: 0; transition: 0.3s;
+        }
+        .sidebar-brand {
+            padding: 1.5rem; display: flex; align-items: center; gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .medical-cross {
+            background: var(--teal); padding: 8px 12px; border-radius: 10px; font-weight: bold; font-size: 1.2rem;
+        }
+        .sidebar-nav { padding: 1.2rem 1rem; display: flex; flex-direction: column; gap: 0.45rem; }
+        .nav-item {
+            color: #cbd5e1; text-decoration: none; padding: 0.85rem 1rem; border-radius: 10px;
+            display: flex; align-items: center; gap: 12px; transition: 0.2s; cursor: pointer;
+            border: none; background: transparent; font-size: 0.95rem; width: 100%; text-align: left;
+        }
+        .nav-item:hover, .nav-item.active { background: var(--teal); color: var(--white); font-weight: 600; }
+        .logout-link { margin-top: 2rem; color: #fca5a5; }
+        .logout-link:hover { background: #dc2626; color: white; }
+
+        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .topbar {
+            background: var(--white); padding: 1rem 2rem; display: flex;
+            justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);
+        }
+        .menu-toggle { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--navy); }
+        .page-title { font-size: 1.35rem; color: var(--navy); font-weight: 700; }
+        .user-badge {
+            background: var(--bg-light); padding: 0.45rem 1rem; border-radius: 20px;
+            font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 8px;
+            border: 1px solid #dbeafe;
+        }
+        .container { padding: 2rem; max-width: 1400px; width: 100%; margin: 0 auto; }
+
+        /* KPI Cards */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
+        .kpi-card {
+            background: var(--white); padding: 1.4rem; border-radius: 14px; box-shadow: var(--shadow);
+            display: flex; align-items: center; gap: 1rem; transition: transform 0.2s;
+        }
+        .kpi-card:hover { transform: translateY(-3px); }
+        .kpi-icon {
+            width: 52px; height: 52px; border-radius: 12px; display: grid; place-items: center; font-size: 1.5rem; flex-shrink: 0;
+        }
+        .kpi-icon.teal { background: #ccfbf1; }
+        .kpi-icon.cyan { background: #cffafe; }
+        .kpi-icon.amber { background: #fef3c7; }
+        .kpi-icon.red { background: #fee2e2; }
+        .kpi-icon.navy { background: #e0e7ff; }
+        .kpi-label { font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 2px; }
+        .kpi-value { font-size: 1.65rem; color: var(--navy); font-weight: 700; }
+
+        /* Cards, Forms, Grids */
+        .card { background: var(--white); padding: 1.5rem; border-radius: 14px; box-shadow: var(--shadow); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.2rem; }
+        .card h3 { color: var(--navy); font-size: 1.15rem; }
+        .form-card { max-width: 820px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .full-width { grid-column: span 2; }
+        .two-col-grid { display: grid; grid-template-columns: 1fr 1.45fr; gap: 1.5rem; }
+
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.9rem; color: var(--navy); }
+        input, select, textarea {
+            width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--border);
+            border-radius: 8px; font-size: 0.95rem; outline: none; background: #fff;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(13,148,136,0.12); }
+
+        .filter-bar { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+        .filter-bar input, .filter-bar select { width: auto; min-width: 210px; }
+
+        /* Buttons */
+        .btn {
+            padding: 0.65rem 1.2rem; border: none; border-radius: 8px; cursor: pointer;
+            font-weight: 600; text-decoration: none; display: inline-block; transition: 0.2s; font-size: 0.9rem;
+        }
+        .btn-block { width: 100%; text-align: center; }
+        .btn-primary { background: var(--teal); color: white; }
+        .btn-primary:hover { background: var(--teal-hover); }
+        .btn-teal { background: var(--cyan); color: var(--navy-dark); }
+        .btn-teal:hover { background: #0891b2; color: white; }
+        .btn-secondary { background: #e2e8f0; color: var(--text-dark); }
+        .btn-secondary:hover { background: #cbd5e1; }
+        .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
+        .btn-edit { background: #e0f2fe; color: #0369a1; }
+        .btn-edit:hover { background: #bae6fd; }
+        .btn-delete { background: #fee2e2; color: #b91c1c; }
+        .btn-delete:hover { background: #fecaca; }
+
+        /* Tables & Badges */
+        .table-responsive { overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+        .data-table th, .data-table td { padding: 0.85rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+        .data-table th { background: #f8fafc; color: var(--navy); font-weight: 700; white-space: nowrap; }
+        .data-table tr:hover { background: #f8fafc; }
+
+        .badge { padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.76rem; font-weight: 600; display: inline-block; }
+        .badge-success { background: #dcfce7; color: #166534; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-info { background: #e0f2fe; color: #075985; }
+
+        /* Toast / Flash Banner */
+        .toast-banner {
+            padding: 0.9rem 1.2rem; border-radius: 10px; margin-bottom: 1.25rem;
+            display: flex; justify-content: space-between; align-items: center; font-weight: 500;
+        }
+        .toast-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .toast-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+        .alert-heading { font-size: 0.95rem; margin-bottom: 0.5rem; }
+        .alert-heading.warning { color: #b45309; }
+        .alert-heading.danger { color: #b91c1c; }
+        .alert-list { list-style: none; display: grid; gap: 0.5rem; }
+        .alert-list li { padding: 0.65rem 0.85rem; background: #f8fafc; border-radius: 8px; font-size: 0.88rem; border-left: 3px solid var(--teal); }
+
+        .report-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+        .tab-btn { padding: 0.6rem 1rem; border: 1px solid var(--border); background: white; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--navy); }
+        .tab-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
+
+        /* Edit Modal */
+        .modal-backdrop {
+            position: fixed; inset: 0; background: rgba(9, 26, 44, 0.55);
+            display: grid; place-items: center; z-index: 200; padding: 1rem;
+        }
+        .modal-box { background: white; padding: 2rem; border-radius: 16px; width: 100%; max-width: 650px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+
+        @media (max-width: 860px) {
+            .auth-wrapper, .two-col-grid, .form-grid { grid-template-columns: 1fr; flex-direction: column; }
+            .full-width { grid-column: span 1; }
+            .sidebar { position: fixed; left: -260px; height: 100%; z-index: 150; }
+            .sidebar.open { left: 0; }
+            .menu-toggle { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== 1. LOGIN & REGISTER SCREEN ==================== -->
+    <div id="auth-screen" class="auth-wrapper">
+        <div class="auth-left">
+            <div class="brand-header">
+                <span class="cross-badge">✚</span>
+                <h1>MediStock</h1>
+            </div>
+            <p class="tagline">Smart Medical Inventory & Supply Chain Management System</p>
+
+            <svg class="medical-illustration" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="40" y="35" width="320" height="220" rx="22" fill="#0F2942" stroke="#1E3A5F" stroke-width="2"/>
+                <rect x="68" y="62" width="110" height="78" rx="14" fill="#0D9488"/>
+                <path d="M123 83V119M105 101H141" stroke="white" stroke-width="8" stroke-linecap="round"/>
+                <rect x="200" y="68" width="130" height="16" rx="8" fill="#38BDF8"/>
+                <rect x="200" y="96" width="95" height="12" rx="6" fill="#94A3B8"/>
+                <rect x="200" y="120" width="70" height="12" rx="6" fill="#2DD4BF"/>
+                <rect x="68" y="162" width="262" height="24" rx="8" fill="#1E3A5F"/>
+                <rect x="68" y="198" width="190" height="24" rx="8" fill="#1E3A5F"/>
+                <circle cx="316" cy="210" r="14" fill="#2DD4BF"/>
+            </svg>
+
+            <ul class="feature-highlights">
+                <li>✔ Real-time Pharmacy Stock & Batch Tracking</li>
+                <li>✔ Automated Expiry & Low-Stock Threshold Alerts</li>
+                <li>✔ Complete Supplier & Supply Chain Audit Trail</li>
+            </ul>
+        </div>
+
+        <div class="auth-right">
+            <!-- Login Box -->
+            <div id="login-card" class="auth-card">
+                <h2>Welcome Back</h2>
+                <p class="subtitle">Sign in to manage MediStock inventory</p>
+                <div id="auth-alert" class="toast-banner toast-danger hidden"></div>
+
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="login-username" placeholder="Enter username" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="login-password" placeholder="Enter password" required>
+                            <button type="button" class="toggle-pw" onclick="togglePassword('login-password', this)">👁️</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Sign In to Dashboard</button>
+                </form>
+
+                <p class="auth-footer">
+                    New pharmacist or staff? <a onclick="switchAuthForm('register')">Create an account</a>
+                </p>
+            </div>
+
+            <!-- Register Box -->
+            <div id="register-card" class="auth-card hidden">
+                <h2>Create Account</h2>
+                <p class="subtitle">Register a new MediStock operator</p>
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="reg-fullname" placeholder="Dr. Ananya Sharma" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="reg-username" placeholder="ananya_pharm" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="reg-email" placeholder="ananya@medistock.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="reg-password" minlength="6" required>
+                            <button type="button" class="toggle-pw" onclick="togglePassword('reg-password', this)">👁️</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Register Account</button>
+                </form>
+                <p class="auth-footer">
+                    Already have an account? <a onclick="switchAuthForm('login')">Back to Login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 2. MAIN APPLICATION WORKSPACE ==================== -->
+    <div id="app-screen" class="app-layout hidden">
+        <!-- Dark Navy Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <span class="medical-cross">✚</span>
+                <div>
+                    <h2>MediStock</h2>
+                    <small style="color:#94a3b8;">Supply Chain DBMS</small>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" onclick="navigate('dashboard', this)"><span>📊</span> Dashboard</button>
+                <button class="nav-item" onclick="navigate('medicines', this)"><span>💊</span> Medicine Inventory</button>
+                <button class="nav-item" onclick="navigate('add-medicine', this)"><span>➕</span> Add Medicine</button>
+                <button class="nav-item" onclick="navigate('suppliers', this)"><span>🚚</span> Suppliers</button>
+                <button class="nav-item" onclick="navigate('stock', this)"><span>📦</span> Stock Management</button>
+                <button class="nav-item" onclick="navigate('reports', this)"><span>📑</span> Reports</button>
+                <button class="nav-item logout-link" onclick="handleLogout()"><span>🚪</span> Logout</button>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="topbar">
+                <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+                <h1 class="page-title" id="topbar-title">Inventory Overview Dashboard</h1>
+                <div class="user-badge">
+                    <span>🩺</span>
+                    <span id="current-user-display">Dr. Ananya Sharma</span>
+                </div>
+            </header>
+
+            <div class="container">
+                <div id="global-toast" class="toast-banner toast-success hidden">
+                    <span id="global-toast-msg"></span>
+                    <button style="background:none;border:none;font-size:1.2rem;cursor:pointer;" onclick="this.parentElement.classList.add('hidden')">×</button>
+                </div>
+
+                <!-- PAGE: DASHBOARD -->
+                <section id="page-dashboard">
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon teal">💊</div>
+                            <div>
+                                <span class="kpi-label">Total Medicines</span>
+                                <h2 class="kpi-value" id="kpi-total-meds">0</h2>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon cyan">📦</div>
+                            <div>
+                                <span class="kpi-label">Available Stock Units</span>
+                                <h2 class="kpi-value" id="kpi-total-stock">0</h2>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon amber">⚠️</div>
+                            <div>
+                                <span class="kpi-label">Low-Stock Medicines</span>
+                                <h2 class="kpi-value" id="kpi-low-stock">0</h2>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon red">⏳</div>
+                            <div>
+                                <span class="kpi-label">Expired Medicines</span>
+                                <h2 class="kpi-value" id="kpi-expired">0</h2>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon navy">🚚</div>
+                            <div>
+                                <span class="kpi-label">Total Suppliers</span>
+                                <h2 class="kpi-value" id="kpi-suppliers">0</h2>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Recent Inventory Activities</h3>
+                            <button class="btn btn-sm btn-primary" onclick="navigate('stock', document.querySelectorAll('.nav-item')[4])">Manage Stock</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Txn ID</th>
+                                        <th>Medicine</th>
+                                        <th>Batch</th>
+                                        <th>Movement</th>
+                                        <th>Quantity</th>
+                                        <th>Remarks</th>
+                                        <th>Operator</th>
+                                        <th>Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-activities-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE: MEDICINE INVENTORY (CRUD) -->
+                <section id="page-medicines" class="hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="filter-bar">
+                                <input type="text" id="med-search" oninput="renderMedicinesTable()" placeholder="Search medicine, batch, or manufacturer...">
+                                <select id="med-category-filter" onchange="renderMedicinesTable()">
+                                    <option value="">All Categories</option>
+                                    <option value="Tablet">Tablet</option>
+                                    <option value="Capsule">Capsule</option>
+                                    <option value="Syrup">Syrup</option>
+                                    <option value="Injection">Injection</option>
+                                    <option value="Ointment">Ointment</option>
+                                </select>
+                                <button class="btn btn-secondary" onclick="resetMedicineFilters()">Reset</button>
+                            </div>
+                            <button class="btn btn-teal" onclick="navigate('add-medicine', document.querySelectorAll('.nav-item')[2])">+ Add Medicine</button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Medicine Name</th>
+                                        <th>Category</th>
+                                        <th>Manufacturer</th>
+                                        <th>Batch No</th>
+                                        <th>Mfg Date</th>
+                                        <th>Expiry Date</th>
+                                        <th>Qty</th>
+                                        <th>Unit Price</th>
+                                        <th>Supplier</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="medicines-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE: ADD MEDICINE -->
+                <section id="page-add-medicine" class="hidden">
+                    <div class="card form-card">
+                        <h3 style="margin-bottom: 1.2rem;">Register New Medicine Batch</h3>
+                        <form onsubmit="handleAddMedicine(event)">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Medicine Name *</label>
+                                    <input type="text" id="add-med-name" placeholder="e.g. Azithromycin 500mg" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Category *</label>
+                                    <select id="add-med-category" required>
+                                        <option value="Tablet">Tablet</option>
+                                        <option value="Capsule">Capsule</option>
+                                        <option value="Syrup">Syrup</option>
+                                        <option value="Injection">Injection</option>
+                                        <option value="Ointment">Ointment</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Manufacturer *</label>
+                                    <input type="text" id="add-med-mfg" placeholder="e.g. Sun Pharma" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Batch Number *</label>
+                                    <input type="text" id="add-med-batch" placeholder="e.g. BATCH-2026-88" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Manufacturing Date *</label>
+                                    <input type="date" id="add-med-mfgdate" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Expiry Date *</label>
+                                    <input type="date" id="add-med-expdate" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Initial Quantity *</label>
+                                    <input type="number" id="add-med-qty" min="0" value="40" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Unit Price (₹) *</label>
+                                    <input type="number" step="0.01" id="add-med-price" placeholder="45.00" required>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label>Supplier</label>
+                                    <select id="add-med-supplier"></select>
+                                </div>
+                            </div>
+                            <div style="margin-top: 0.5rem; display: flex; gap: 0.8rem;">
+                                <button type="submit" class="btn btn-primary">Save Medicine</button>
+                                <button type="button" class="btn btn-secondary" onclick="navigate('medicines', document.querySelectorAll('.nav-item')[1])">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- PAGE: SUPPLIERS -->
+                <section id="page-suppliers" class="hidden">
+                    <div class="two-col-grid">
+                        <div class="card">
+                            <h3 id="sup-form-title" style="margin-bottom: 1rem;">Add New Supplier</h3>
+                            <form onsubmit="handleSaveSupplier(event)">
+                                <input type="hidden" id="sup-id">
+                                <div class="form-group">
+                                    <label>Supplier Contact Person *</label>
+                                    <input type="text" id="sup-name" placeholder="Rajesh Verma" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Company Name *</label>
+                                    <input type="text" id="sup-company" placeholder="MedLife Distributors Pvt Ltd" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Contact Number *</label>
+                                    <input type="text" id="sup-phone" placeholder="+91 98765 43210" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Email Address *</label>
+                                    <input type="email" id="sup-email" placeholder="rajesh@medlife.in" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Warehouse Address *</label>
+                                    <textarea id="sup-address" rows="3" placeholder="Plot 14, Pharma Park, Bengaluru" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Supplier</button>
+                                <button type="button" class="btn btn-secondary" onclick="resetSupplierForm()">Clear</button>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">Registered Suppliers</h3>
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Supplier</th>
+                                            <th>Company</th>
+                                            <th>Contact</th>
+                                            <th>Email</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="suppliers-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE: STOCK MANAGEMENT -->
+                <section id="page-stock" class="hidden">
+                    <div class="two-col-grid">
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">Record Stock Movement</h3>
+                            <form onsubmit="handleStockTransaction(event)">
+                                <div class="form-group">
+                                    <label>Select Medicine *</label>
+                                    <select id="stock-med-select" required></select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Movement Type *</label>
+                                    <select id="stock-type" required>
+                                        <option value="IN">Stock Arrival (Increase Stock +)</option>
+                                        <option value="OUT">Medicine Distribution / Sale (Decrease Stock -)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Quantity *</label>
+                                    <input type="number" id="stock-qty" min="1" value="10" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Remarks / Invoice Ref</label>
+                                    <input type="text" id="stock-remarks" placeholder="e.g. Invoice #INV-902 or Pharmacy Dispense">
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">Update Stock</button>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem;">Critical Inventory Alerts</h3>
+                            <h4 class="alert-heading warning">⚠️ Low-Stock Medicines (≤ 15 units)</h4>
+                            <ul class="alert-list" id="low-stock-alert-list"></ul>
+
+                            <h4 class="alert-heading danger" style="margin-top: 1.2rem;">⏳ Expired Medicines</h4>
+                            <ul class="alert-list" id="expired-alert-list"></ul>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-top: 1.5rem;">
+                        <h3 style="margin-bottom: 1rem;">Stock Transaction History</h3>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Txn ID</th>
+                                        <th>Medicine</th>
+                                        <th>Batch</th>
+                                        <th>Type</th>
+                                        <th>Quantity</th>
+                                        <th>Remarks</th>
+                                        <th>Operator</th>
+                                        <th>Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stock-history-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE: REPORTS -->
+                <section id="page-reports" class="hidden">
+                    <div class="report-tabs">
+                        <button class="tab-btn active" onclick="switchReportTab('rep-inv', this)">Total Inventory</button>
+                        <button class="tab-btn" onclick="switchReportTab('rep-low', this)">Low-Stock Report</button>
+                        <button class="tab-btn" onclick="switchReportTab('rep-exp', this)">Expired Medicines</button>
+                        <button class="tab-btn" onclick="switchReportTab('rep-sup', this)">Supplier Report</button>
+                        <button class="tab-btn" onclick="switchReportTab('rep-mov', this)">Stock Movement</button>
+                        <button class="btn btn-secondary" onclick="window.print()" style="margin-left:auto;">🖨️ Print Report</button>
+                    </div>
+
+                    <div id="rep-inv" class="card report-panel">
+                        <h3>Total Medicine Inventory Valuation</h3>
+                        <div class="table-responsive"><table class="data-table" id="rep-inv-table"></table></div>
+                    </div>
+                    <div id="rep-low" class="card report-panel hidden">
+                        <h3>Low-Stock Medicines Report</h3>
+                        <div class="table-responsive"><table class="data-table" id="rep-low-table"></table></div>
+                    </div>
+                    <div id="rep-exp" class="card report-panel hidden">
+                        <h3>Expired Medicine Report</h3>
+                        <div class="table-responsive"><table class="data-table" id="rep-exp-table"></table></div>
+                    </div>
+                    <div id="rep-sup" class="card report-panel hidden">
+                        <h3>Supplier Summary Report</h3>
+                        <div class="table-responsive"><table class="data-table" id="rep-sup-table"></table></div>
+                    </div>
+                    <div id="rep-mov" class="card report-panel hidden">
+                        <h3>Stock Movement Audit History</h3>
+                        <div class="table-responsive"><table class="data-table" id="rep-mov-table"></table></div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- EDIT MEDICINE MODAL -->
+    <div id="edit-med-modal" class="modal-backdrop hidden">
+        <div class="modal-box">
+            <h3 style="color:var(--navy); margin-bottom:1rem;">Edit Medicine Record</h3>
+            <form onsubmit="handleUpdateMedicine(event)">
+                <input type="hidden" id="edit-med-id">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Medicine Name</label>
+                        <input type="text" id="edit-med-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="edit-med-category">
+                            <option value="Tablet">Tablet</option>
+                            <option value="Capsule">Capsule</option>
+                            <option value="Syrup">Syrup</option>
+                            <option value="Injection">Injection</option>
+                            <option value="Ointment">Ointment</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Manufacturer</label>
+                        <input type="text" id="edit-med-mfg" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Batch Number</label>
+                        <input type="text" id="edit-med-batch" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Mfg Date</label>
+                        <input type="date" id="edit-med-mfgdate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Expiry Date</label>
+                        <input type="date" id="edit-med-expdate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" id="edit-med-qty" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Unit Price (₹)</label>
+                        <input type="number" step="0.01" id="edit-med-price" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Supplier</label>
+                        <select id="edit-med-supplier"></select>
+                    </div>
+                </div>
+                <div style="display:flex; gap:0.8rem; margin-top:0.5rem;">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('edit-med-modal').classList.add('hidden')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CUSTOM DELETE CONFIRMATION MODAL -->
+    <div id="delete-confirm-modal" class="modal-backdrop hidden">
+        <div class="modal-box" style="max-width: 440px; text-align: center;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #fee2e2; color: #b91c1c; display: grid; place-items: center; font-size: 1.6rem; margin: 0 auto 1rem;">🗑️</div>
+            <h3 style="color: var(--navy); margin-bottom: 0.5rem;">Confirm Permanent Deletion</h3>
+            <p id="delete-modal-text" style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.5;"></p>
+            <div style="display: flex; gap: 0.8rem; justify-content: center;">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button type="button" id="confirm-delete-btn" class="btn" style="background: #dc2626; color: white;">Yes, Delete Record</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initial Client-Side State mirroring MySQL tables
+        const TODAY = "2026-11-23";
+        const LOW_STOCK_THRESHOLD = 15;
+        let currentOperator = "Dr. Ananya Sharma";
+        let pendingDeleteAction = null;
+
+        function openDeleteModal(message, onConfirm) {
+            document.getElementById('delete-modal-text').textContent = message;
+            pendingDeleteAction = onConfirm;
+            document.getElementById('delete-confirm-modal').classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-confirm-modal').classList.add('hidden');
+            pendingDeleteAction = null;
+        }
+
+        document.getElementById('confirm-delete-btn').addEventListener('click', () => {
+            if (typeof pendingDeleteAction === 'function') {
+                pendingDeleteAction();
+            }
+            closeDeleteModal();
+        });
+
+        let suppliers = [
+            { id: 1, name: "Rajesh Verma", company: "MedLife Distributors", phone: "+91 98765 43210", email: "rajesh@medlife.in", address: "Plot 14, Electronic City, Bengaluru" },
+            { id: 2, name: "Priya Nair", company: "Apex Pharma Supply", phone: "+91 91234 56789", email: "priya@apexpharma.com", address: "MG Road, Kochi, Kerala" },
+            { id: 3, name: "Vikram Desai", company: "BioCare Logistics", phone: "+91 99887 76655", email: "vikram@biocare.co.in", address: "Andheri East, Mumbai" }
+        ];
+
+        let medicines = [
+            { id: 101, name: "Paracetamol 500mg", category: "Tablet", manufacturer: "Cipla Ltd", batch: "CIP-2026-01", mfgDate: "2026-01-15", expDate: "2028-01-14", qty: 140, price: 18.50, supplierId: 1 },
+            { id: 102, name: "Amoxicillin 250mg", category: "Capsule", manufacturer: "Sun Pharma", batch: "SUN-2026-44", mfgDate: "2026-02-10", expDate: "2027-08-10", qty: 12, price: 65.00, supplierId: 2 },
+            { id: 103, name: "Benadryl Cough Syrup", category: "Syrup", manufacturer: "Johnson & Johnson", batch: "JJ-2025-19", mfgDate: "2025-03-01", expDate: "2026-09-01", qty: 25, price: 112.00, supplierId: 1 },
+            { id: 104, name: "Insulin Glargine", category: "Injection", manufacturer: "Biocon", batch: "BIO-2026-77", mfgDate: "2026-05-20", expDate: "2027-05-19", qty: 8, price: 480.00, supplierId: 3 },
+            { id: 105, name: "Betadine Ointment 20g", category: "Ointment", manufacturer: "Win-Medicare", batch: "WIN-2026-12", mfgDate: "2026-04-01", expDate: "2028-04-01", qty: 55, price: 95.00, supplierId: 2 }
+        ];
+
+        let transactions = [
+            { id: 5004, medName: "Insulin Glargine", batch: "BIO-2026-77", type: "OUT", qty: 4, remarks: "Hospital Ward B Dispense", user: "admin_pharm", date: "2026-11-23 09:40" },
+            { id: 5003, medName: "Paracetamol 500mg", batch: "CIP-2026-01", type: "IN", qty: 100, remarks: "Restock Invoice #INV-881", user: "admin_pharm", date: "2026-11-22 16:15" },
+            { id: 5002, medName: "Amoxicillin 250mg", batch: "SUN-2026-44", type: "OUT", qty: 18, remarks: "Retail Pharmacy Counter", user: "admin_pharm", date: "2026-11-21 14:20" },
+            { id: 5001, medName: "Betadine Ointment 20g", batch: "WIN-2026-12", type: "IN", qty: 55, remarks: "Initial batch arrival", user: "admin_pharm", date: "2026-11-20 11:05" }
+        ];
+
+        function showToast(msg, isError = false) {
+            const banner = document.getElementById('global-toast');
+            banner.className = `toast-banner ${isError ? 'toast-danger' : 'toast-success'}`;
+            document.getElementById('global-toast-msg').textContent = msg;
+            banner.classList.remove('hidden');
+            setTimeout(() => banner.classList.add('hidden'), 4000);
+        }
+
+        // Auth Logic
+        function togglePassword(id, btn) {
+            const el = document.getElementById(id);
+            el.type = el.type === 'password' ? 'text' : 'password';
+            btn.textContent = el.type === 'password' ? '👁️' : '🙈';
+        }
+
+        function switchAuthForm(mode) {
+            document.getElementById('login-card').classList.toggle('hidden', mode !== 'login');
+            document.getElementById('register-card').classList.toggle('hidden', mode !== 'register');
+            document.getElementById('auth-alert').classList.add('hidden');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('login-username').value.trim();
+            const pass = document.getElementById('login-password').value;
+            if (!user || pass.length < 4) {
+                const alertEl = document.getElementById('auth-alert');
+                alertEl.textContent = "Invalid username or password.";
+                alertEl.classList.remove('hidden');
+                return;
+            }
+            currentOperator = user === 'admin_pharm' ? 'Dr. Ananya Sharma' : user;
+            document.getElementById('current-user-display').textContent = currentOperator;
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            refreshAllViews();
+            showToast(`Welcome back, ${currentOperator}!`);
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-fullname').value.trim();
+            const uname = document.getElementById('reg-username').value.trim();
+            switchAuthForm('login');
+            document.getElementById('login-username').value = uname;
+            const alertEl = document.getElementById('auth-alert');
+            alertEl.className = 'toast-banner toast-success';
+            alertEl.textContent = `Account created for ${name}! Please sign in.`;
+            alertEl.classList.remove('hidden');
+        }
+
+        function handleLogout() {
+            document.getElementById('app-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+        }
+
+        // Navigation
+        const pageTitles = {
+            'dashboard': 'Inventory Overview Dashboard',
+            'medicines': 'Medicine Inventory Management',
+            'add-medicine': 'Add New Medicine',
+            'suppliers': 'Supplier Management',
+            'stock': 'Stock Movements & Alerts',
+            'reports': 'System Reports & Analytics'
+        };
+
+        function navigate(pageId, navBtn) {
+            document.querySelectorAll('main section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            if (navBtn) navBtn.classList.add('active');
+            document.getElementById('topbar-title').textContent = pageTitles[pageId];
+            document.getElementById('sidebar').classList.remove('open');
+            refreshAllViews();
+        }
+
+        // Render Functions
+        function getSupplierName(supId) {
+            const s = suppliers.find(item => item.id === Number(supId));
+            return s ? s.name : 'Unassigned';
+        }
+
+        function refreshAllViews() {
+            renderDashboard();
+            renderMedicinesTable();
+            populateSupplierDropdowns();
+            renderSuppliersTable();
+            renderStockView();
+            renderReports();
+        }
+
+        function renderDashboard() {
+            document.getElementById('kpi-total-meds').textContent = medicines.length;
+            document.getElementById('kpi-total-stock').textContent = medicines.reduce((sum, m) => sum + m.qty, 0);
+            document.getElementById('kpi-low-stock').textContent = medicines.filter(m => m.qty <= LOW_STOCK_THRESHOLD).length;
+            document.getElementById('kpi-expired').textContent = medicines.filter(m => m.expDate < TODAY).length;
+            document.getElementById('kpi-suppliers').textContent = suppliers.length;
+
+            const tbody = document.getElementById('dashboard-activities-body');
+            tbody.innerHTML = transactions.slice(0, 6).map(t => `
+                <tr>
+                    <td>#${t.id}</td>
+                    <td><strong>${t.medName}</strong></td>
+                    <td>${t.batch}</td>
+                    <td><span class="badge ${t.type === 'IN' ? 'badge-success' : 'badge-danger'}">${t.type === 'IN' ? 'STOCK IN (+)' : 'STOCK OUT (-)'}</span></td>
+                    <td><strong>${t.qty}</strong></td>
+                    <td>${t.remarks || '-'}</td>
+                    <td>${t.user}</td>
+                    <td>${t.date}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderMedicinesTable() {
+            const search = document.getElementById('med-search').value.toLowerCase();
+            const cat = document.getElementById('med-category-filter').value;
+            const filtered = medicines.filter(m => {
+                const matchText = m.name.toLowerCase().includes(search) || m.batch.toLowerCase().includes(search) || m.manufacturer.toLowerCase().includes(search);
+                const matchCat = !cat || m.category === cat;
+                return matchText && matchCat;
+            });
+
+            const tbody = document.getElementById('medicines-table-body');
+            if (!filtered.length) {
+                tbody.innerHTML = `<tr><td colspan="11" class="text-center">No medicines found matching your search.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(m => `
+                <tr>
+                    <td>${m.id}</td>
+                    <td><strong>${m.name}</strong></td>
+                    <td><span class="badge badge-info">${m.category}</span></td>
+                    <td>${m.manufacturer}</td>
+                    <td>${m.batch}</td>
+                    <td>${m.mfgDate}</td>
+                    <td>${m.expDate < TODAY ? `<span class="badge badge-danger">${m.expDate} (Expired)</span>` : m.expDate}</td>
+                    <td>${m.qty <= LOW_STOCK_THRESHOLD ? `<span class="badge badge-warning">${m.qty} (Low)</span>` : `<strong>${m.qty}</strong>`}</td>
+                    <td>₹${m.price.toFixed(2)}</td>
+                    <td>${getSupplierName(m.supplierId)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-edit" onclick="openEditMedicine(${m.id})">Edit</button>
+                        <button class="btn btn-sm btn-delete" onclick="deleteMedicine(${m.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function resetMedicineFilters() {
+            document.getElementById('med-search').value = '';
+            document.getElementById('med-category-filter').value = '';
+            renderMedicinesTable();
+        }
+
+        function populateSupplierDropdowns() {
+            const options = `<option value="">-- Select Supplier --</option>` +
+                suppliers.map(s => `<option value="${s.id}">${s.name} (${s.company})</option>`).join('');
+            document.getElementById('add-med-supplier').innerHTML = options;
+            document.getElementById('edit-med-supplier').innerHTML = options;
+        }
+
+        function handleAddMedicine(e) {
+            e.preventDefault();
+            const newId = medicines.length ? Math.max(...medicines.map(m => m.id)) + 1 : 101;
+            const qty = Number(document.getElementById('add-med-qty').value);
+            const med = {
+                id: newId,
+                name: document.getElementById('add-med-name').value.trim(),
+                category: document.getElementById('add-med-category').value,
+                manufacturer: document.getElementById('add-med-mfg').value.trim(),
+                batch: document.getElementById('add-med-batch').value.trim(),
+                mfgDate: document.getElementById('add-med-mfgdate').value,
+                expDate: document.getElementById('add-med-expdate').value,
+                qty: qty,
+                price: Number(document.getElementById('add-med-price').value),
+                supplierId: document.getElementById('add-med-supplier').value || null
+            };
+            medicines.unshift(med);
+            if (qty > 0) {
+                transactions.unshift({
+                    id: transactions[0].id + 1,
+                    medName: med.name,
+                    batch: med.batch,
+                    type: 'IN',
+                    qty: qty,
+                    remarks: 'Initial stock on medicine creation',
+                    user: currentOperator,
+                    date: `${TODAY} 10:15`
+                });
+            }
+            e.target.reset();
+            navigate('medicines', document.querySelectorAll('.nav-item')[1]);
+            showToast(`Medicine "${med.name}" added to database!`);
+        }
+
+        function openEditMedicine(id) {
+            const m = medicines.find(item => item.id === id);
+            if (!m) return;
+            document.getElementById('edit-med-id').value = m.id;
+            document.getElementById('edit-med-name').value = m.name;
+            document.getElementById('edit-med-category').value = m.category;
+            document.getElementById('edit-med-mfg').value = m.manufacturer;
+            document.getElementById('edit-med-batch').value = m.batch;
+            document.getElementById('edit-med-mfgdate').value = m.mfgDate;
+            document.getElementById('edit-med-expdate').value = m.expDate;
+            document.getElementById('edit-med-qty').value = m.qty;
+            document.getElementById('edit-med-price').value = m.price;
+            document.getElementById('edit-med-supplier').value = m.supplierId || '';
+            document.getElementById('edit-med-modal').classList.remove('hidden');
+        }
+
+        function handleUpdateMedicine(e) {
+            e.preventDefault();
+            const id = Number(document.getElementById('edit-med-id').value);
+            const idx = medicines.findIndex(m => m.id === id);
+            if (idx > -1) {
+                medicines[idx] = {
+                    id,
+                    name: document.getElementById('edit-med-name').value.trim(),
+                    category: document.getElementById('edit-med-category').value,
+                    manufacturer: document.getElementById('edit-med-mfg').value.trim(),
+                    batch: document.getElementById('edit-med-batch').value.trim(),
+                    mfgDate: document.getElementById('edit-med-mfgdate').value,
+                    expDate: document.getElementById('edit-med-expdate').value,
+                    qty: Number(document.getElementById('edit-med-qty').value),
+                    price: Number(document.getElementById('edit-med-price').value),
+                    supplierId: document.getElementById('edit-med-supplier').value || null
+                };
+            }
+            document.getElementById('edit-med-modal').classList.add('hidden');
+            refreshAllViews();
+            showToast('Medicine updated successfully!');
+        }
+
+        function deleteMedicine(id) {
+            const m = medicines.find(item => item.id === id);
+            if (!m) return;
+            openDeleteModal(
+                `Are you sure you want to permanently delete "${m.name}" (Batch: ${m.batch}) from the inventory database?`,
+                () => {
+                    medicines = medicines.filter(item => item.id !== id);
+                    refreshAllViews();
+                    showToast(`Deleted "${m.name}" from inventory.`);
+                }
+            );
+        }
+
+        // Suppliers CRUD
+        function renderSuppliersTable() {
+            const tbody = document.getElementById('suppliers-table-body');
+            tbody.innerHTML = suppliers.map(s => `
+                <tr>
+                    <td>${s.id}</td>
+                    <td><strong>${s.name}</strong></td>
+                    <td>${s.company}</td>
+                    <td>${s.phone}</td>
+                    <td>${s.email}</td>
+                    <td>
+                        <button class="btn btn-sm btn-edit" onclick="editSupplier(${s.id})">Edit</button>
+                        <button class="btn btn-sm btn-delete" onclick="deleteSupplier(${s.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function handleSaveSupplier(e) {
+            e.preventDefault();
+            const editId = document.getElementById('sup-id').value;
+            const payload = {
+                id: editId ? Number(editId) : (suppliers.length ? Math.max(...suppliers.map(s => s.id)) + 1 : 1),
+                name: document.getElementById('sup-name').value.trim(),
+                company: document.getElementById('sup-company').value.trim(),
+                phone: document.getElementById('sup-phone').value.trim(),
+                email: document.getElementById('sup-email').value.trim(),
+                address: document.getElementById('sup-address').value.trim()
+            };
+            if (editId) {
+                const idx = suppliers.findIndex(s => s.id === Number(editId));
+                suppliers[idx] = payload;
+                showToast('Supplier updated successfully!');
+            } else {
+                suppliers.unshift(payload);
+                showToast('New supplier added!');
+            }
+            resetSupplierForm();
+            refreshAllViews();
+        }
+
+        function editSupplier(id) {
+            const s = suppliers.find(item => item.id === id);
+            document.getElementById('sup-form-title').textContent = `Edit Supplier #${s.id}`;
+            document.getElementById('sup-id').value = s.id;
+            document.getElementById('sup-name').value = s.name;
+            document.getElementById('sup-company').value = s.company;
+            document.getElementById('sup-phone').value = s.phone;
+            document.getElementById('sup-email').value = s.email;
+            document.getElementById('sup-address').value = s.address;
+        }
+
+        function resetSupplierForm() {
+            document.getElementById('sup-form-title').textContent = 'Add New Supplier';
+            document.getElementById('sup-id').value = '';
+            document.getElementById('sup-name').value = '';
+            document.getElementById('sup-company').value = '';
+            document.getElementById('sup-phone').value = '';
+            document.getElementById('sup-email').value = '';
+            document.getElementById('sup-address').value = '';
+        }
+
+        function deleteSupplier(id) {
+            const s = suppliers.find(item => item.id === id);
+            if (!s) return;
+            openDeleteModal(
+                `Are you sure you want to remove supplier "${s.company}"? Linked medicines will remain unassigned.`,
+                () => {
+                    suppliers = suppliers.filter(item => item.id !== id);
+                    refreshAllViews();
+                    showToast(`Supplier "${s.company}" removed.`);
+                }
+            );
+        }
+
+        function deleteTransaction(id) {
+            openDeleteModal(
+                `Delete stock transaction log #${id}?`,
+                () => {
+                    transactions = transactions.filter(t => t.id !== id);
+                    refreshAllViews();
+                    showToast(`Transaction #${id} removed from audit log.`);
+                }
+            );
+        }
+
+        // Stock Management
+        function renderStockView() {
+            document.getElementById('stock-med-select').innerHTML = medicines.map(m =>
+                `<option value="${m.id}">${m.name} (${m.batch}) — Available: ${m.qty}</option>`
+            ).join('');
+
+            const lowList = medicines.filter(m => m.qty <= LOW_STOCK_THRESHOLD);
+            document.getElementById('low-stock-alert-list').innerHTML = lowList.length
+                ? lowList.map(m => `<li><strong>${m.name}</strong> (${m.batch}) — Only <strong>${m.qty}</strong> units left</li>`).join('')
+                : `<li>All medicines are adequately stocked.</li>`;
+
+            const expList = medicines.filter(m => m.expDate < TODAY);
+            document.getElementById('expired-alert-list').innerHTML = expList.length
+                ? expList.map(m => `<li><strong>${m.name}</strong> (${m.batch}) — Expired on <strong>${m.expDate}</strong></li>`).join('')
+                : `<li>No expired medicines in inventory.</li>`;
+
+            document.getElementById('stock-history-body').innerHTML = transactions.map(t => `
+                <tr>
+                    <td>#${t.id}</td>
+                    <td><strong>${t.medName}</strong></td>
+                    <td>${t.batch}</td>
+                    <td><span class="badge ${t.type === 'IN' ? 'badge-success' : 'badge-danger'}">${t.type}</span></td>
+                    <td>${t.qty}</td>
+                    <td>${t.remarks || '-'}</td>
+                    <td>${t.user}</td>
+                    <td>${t.date} <button class="btn btn-sm btn-delete" style="margin-left:8px;" onclick="deleteTransaction(${t.id})">Delete</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function handleStockTransaction(e) {
+            e.preventDefault();
+            const medId = Number(document.getElementById('stock-med-select').value);
+            const type = document.getElementById('stock-type').value;
+            const qty = Number(document.getElementById('stock-qty').value);
+            const remarks = document.getElementById('stock-remarks').value.trim();
+
+            const med = medicines.find(m => m.id === medId);
+            if (type === 'OUT' && med.qty < qty) {
+                showToast(`Insufficient stock! Only ${med.qty} units available for ${med.name}.`, true);
+                return;
+            }
+
+            med.qty = type === 'IN' ? med.qty + qty : med.qty - qty;
+            transactions.unshift({
+                id: transactions[0].id + 1,
+                medName: med.name,
+                batch: med.batch,
+                type,
+                qty,
+                remarks: remarks || (type === 'IN' ? 'Supplier Stock Arrival' : 'Counter Distribution'),
+                user: currentOperator,
+                date: `${TODAY} 10:15`
+            });
+            document.getElementById('stock-remarks').value = '';
+            refreshAllViews();
+            showToast(`${qty} units ${type === 'IN' ? 'added to' : 'dispatched from'} ${med.name}.`);
+        }
+
+        // Reports
+        function switchReportTab(tabId, btn) {
+            document.querySelectorAll('.report-panel').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.remove('hidden');
+            btn.classList.add('active');
+        }
+
+        function renderReports() {
+            document.getElementById('rep-inv-table').innerHTML = `
+                <thead><tr><th>ID</th><th>Medicine</th><th>Category</th><th>Batch</th><th>Qty</th><th>Unit Price</th><th>Total Valuation</th></tr></thead>
+                <tbody>${medicines.map(m => `<tr><td>${m.id}</td><td>${m.name}</td><td>${m.category}</td><td>${m.batch}</td><td>${m.qty}</td><td>₹${m.price.toFixed(2)}</td><td><strong>₹${(m.qty * m.price).toFixed(2)}</strong></td></tr>`).join('')}</tbody>
+            `;
+
+            const low = medicines.filter(m => m.qty <= LOW_STOCK_THRESHOLD);
+            document.getElementById('rep-low-table').innerHTML = `
+                <thead><tr><th>ID</th><th>Medicine</th><th>Batch</th><th>Remaining Qty</th><th>Expiry Date</th></tr></thead>
+                <tbody>${low.map(m => `<tr><td>${m.id}</td><td>${m.name}</td><td>${m.batch}</td><td><span class="badge badge-warning">${m.qty}</span></td><td>${m.expDate}</td></tr>`).join('')}</tbody>
+            `;
+
+            const exp = medicines.filter(m => m.expDate < TODAY);
+            document.getElementById('rep-exp-table').innerHTML = `
+                <thead><tr><th>ID</th><th>Medicine</th><th>Batch</th><th>Qty</th><th>Expired Date</th></tr></thead>
+                <tbody>${exp.map(m => `<tr><td>${m.id}</td><td>${m.name}</td><td>${m.batch}</td><td>${m.qty}</td><td><span class="badge badge-danger">${m.expDate}</span></td></tr>`).join('')}</tbody>
+            `;
+
+            document.getElementById('rep-sup-table').innerHTML = `
+                <thead><tr><th>ID</th><th>Supplier</th><th>Company</th><th>Contact</th><th>Supplied Batches</th><th>Total Units</th></tr></thead>
+                <tbody>${suppliers.map(s => {
+                    const supplied = medicines.filter(m => Number(m.supplierId) === s.id);
+                    const units = supplied.reduce((acc, m) => acc + m.qty, 0);
+                    return `<tr><td>${s.id}</td><td>${s.name}</td><td>${s.company}</td><td>${s.phone}</td><td>${supplied.length}</td><td>${units}</td></tr>`;
+                }).join('')}</tbody>
+            `;
+
+            document.getElementById('rep-mov-table').innerHTML = `
+                <thead><tr><th>Txn ID</th><th>Medicine</th><th>Type</th><th>Qty</th><th>Remarks</th><th>Operator</th><th>Date</th></tr></thead>
+                <tbody>${transactions.map(t => `<tr><td>#${t.id}</td><td>${t.medName}</td><td>${t.type}</td><td>${t.qty}</td><td>${t.remarks || '-'}</td><td>${t.user}</td><td>${t.date}</td></tr>`).join('')}</tbody>
+            `;
+        }
+    </script>
+</body>
+</html>

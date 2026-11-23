@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}MediStock{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+</head>
+<body>
+{% if g.user %}
+<div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+        <a class="brand sidebar-brand" href="{{ url_for('dashboard') }}">
+            <span class="cross-badge">✚</span>
+            <span><strong>MediStock</strong><small>Supply Chain DBMS</small></span>
+        </a>
+        <nav class="sidebar-nav" aria-label="Main navigation">
+            <a class="nav-item {{ 'active' if request.endpoint == 'dashboard' else '' }}" href="{{ url_for('dashboard') }}"><span>▦</span> Dashboard</a>
+            <a class="nav-item {{ 'active' if request.endpoint in ('medicines', 'edit_medicine') else '' }}" href="{{ url_for('medicines') }}"><span>✚</span> Medicine Inventory</a>
+            <a class="nav-item {{ 'active' if request.endpoint == 'add_medicine' else '' }}" href="{{ url_for('add_medicine') }}"><span>＋</span> Add Medicine</a>
+            <a class="nav-item {{ 'active' if request.endpoint in ('suppliers', 'edit_supplier') else '' }}" href="{{ url_for('suppliers') }}"><span>⇄</span> Suppliers</a>
+            <a class="nav-item {{ 'active' if request.endpoint == 'stock' else '' }}" href="{{ url_for('stock') }}"><span>▤</span> Stock Management</a>
+            <a class="nav-item {{ 'active' if request.endpoint == 'reports' else '' }}" href="{{ url_for('reports') }}"><span>▧</span> Reports</a>
+        </nav>
+        <form class="logout-form" action="{{ url_for('logout') }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="nav-item logout-link" type="submit"><span>↪</span> Logout</button>
+        </form>
+        <div class="sidebar-note">Inventory clarity.<br>Safer supply.</div>
+    </aside>
+    <main class="main-content">
+        <header class="topbar">
+            <button class="menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" data-menu-toggle>☰</button>
+            <div>
+                <p class="eyebrow">MEDICAL INVENTORY WORKSPACE</p>
+                <h1 class="page-title">{% block page_heading %}Dashboard{% endblock %}</h1>
+            </div>
+            <div class="user-badge"><span class="user-avatar">✚</span><span>{{ g.user.full_name }}</span></div>
+        </header>
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-stack" aria-live="polite">
+                        {% for category, message in messages %}
+                            <div class="flash flash-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </div>
+        <footer class="page-footer">MediStock <span>·</span> Medical Inventory &amp; Supply Chain Management</footer>
+    </main>
+</div>
+{% else %}
+<main class="auth-wrapper">
+    <section class="auth-left">
+        <a class="brand auth-brand" href="{{ url_for('login') }}">
+            <span class="cross-badge">✚</span><strong>MediStock</strong>
+        </a>
+        <div class="auth-copy">
+            <p class="eyebrow light">SMARTER STOCK. BETTER CARE.</p>
+            <h1>Every batch,<br>in good hands.</h1>
+            <p class="auth-tagline">A simple workspace for dependable medical inventory and supply chain management.</p>
+            <div class="medical-illustration" aria-hidden="true">
+                <div class="illustration-glow"></div>
+                <div class="illustration-card">
+                    <div class="illustration-head"><span class="tiny-cross">✚</span><span class="illustration-line"></span><span class="status-dot"></span></div>
+                    <div class="medicine-box"><span>✚</span><i></i><i></i><i></i></div>
+                    <div class="illustration-bars"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                    <div class="illustration-caption"><span>STOCK HEALTH</span><b>TRACKED</b></div>
+                </div>
+                <span class="float-pill pill-one">✚</span><span class="float-pill pill-two">✓</span>
+            </div>
+            <ul class="auth-features">
+                <li><span>✓</span> Batch and expiry date tracking</li>
+                <li><span>✓</span> Low-stock alerts at a glance</li>
+                <li><span>✓</span> A clear, auditable stock history</li>
+            </ul>
+        </div>
+        <p class="auth-credit">A dependable view of your inventory.</p>
+    </section>
+    <section class="auth-right">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="auth-flashes">
+                    {% for category, message in messages %}<div class="flash flash-{{ category }}">{{ message }}</div>{% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% block auth_content %}{% endblock %}
+        <p class="auth-legal">MediStock · Medical Inventory Management</p>
+    </section>
+</main>
+{% endif %}
+</body>
+</html>

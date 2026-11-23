@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Medicine inventory · MediStock{% endblock %}
+{% block page_heading %}Medicine inventory{% endblock %}
+{% block content %}
+<div class="page-intro"><div><p class="eyebrow">BATCHES &amp; AVAILABILITY</p><h2 class="section-title">Medicine inventory</h2><p class="muted">Search, review and update the medicines in your store.</p></div><a class="btn btn-primary" href="{{ url_for('add_medicine') }}">＋ Add medicine</a></div>
+<section class="card">
+    <form class="filter-bar" method="get" action="{{ url_for('medicines') }}">
+        <label class="search-input"><span>⌕</span><input type="search" name="q" value="{{ search }}" placeholder="Search name, batch or manufacturer" aria-label="Search inventory"></label>
+        <select name="category" aria-label="Filter by category"><option value="">All categories</option>{% for item in categories %}<option value="{{ item }}" {{ 'selected' if category == item else '' }}>{{ item }}</option>{% endfor %}</select>
+        <button class="btn btn-secondary" type="submit">Apply filters</button>
+        {% if search or category %}<a class="btn btn-ghost" href="{{ url_for('medicines') }}">Clear</a>{% endif %}
+        <span class="result-count">{{ medicines|length }} batch{{ '' if medicines|length == 1 else 'es' }}</span>
+    </form>
+    {% if medicines %}
+    <div class="table-responsive"><table class="data-table">
+        <thead><tr><th>ID</th><th>Medicine / batch</th><th>Category</th><th>Manufacturer</th><th>Dates</th><th>Qty</th><th>Unit price</th><th>Supplier</th><th>Actions</th></tr></thead>
+        <tbody>{% for medicine in medicines %}
+        <tr>
+            <td class="id-cell">#{{ medicine.id }}</td>
+            <td><strong>{{ medicine.name }}</strong><small class="table-subtext">{{ medicine.batch_number }}</small></td>
+            <td><span class="badge badge-neutral">{{ medicine.category }}</span></td>
+            <td>{{ medicine.manufacturer }}</td>
+            <td><small class="date-label">Mfg {{ medicine.manufacturing_date.strftime('%d %b %Y') }}</small><small class="table-subtext {{ 'text-danger' if medicine.expiry_date < today else '' }}">Exp {{ medicine.expiry_date.strftime('%d %b %Y') }}</small></td>
+            <td><span class="badge {{ 'badge-warning' if medicine.quantity <= low_stock_threshold else 'badge-success' }}">{{ medicine.quantity }} units</span></td>
+            <td>₹{{ '%.2f'|format(medicine.unit_price) }}</td><td>{{ medicine.supplier_name or '—' }}</td>
+            <td><div class="row-actions"><a class="btn btn-sm btn-soft" href="{{ url_for('edit_medicine', medicine_id=medicine.id) }}">Edit</a><form method="post" action="{{ url_for('delete_medicine', medicine_id=medicine.id) }}" data-confirm="Delete {{ medicine.name }} (batch {{ medicine.batch_number }})? Stock history will be retained."><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-sm btn-danger" type="submit">Delete</button></form></div></td>
+        </tr>
+        {% endfor %}</tbody>
+    </table></div>
+    {% else %}<div class="empty-state"><span>✚</span><strong>No medicine batches found</strong><p>{% if search or category %}Try a different search or clear the filters.{% else %}Add your first medicine batch to start tracking stock.{% endif %}</p>{% if not search and not category %}<a class="btn btn-primary" href="{{ url_for('add_medicine') }}">Add a medicine</a>{% endif %}</div>{% endif %}
+</section>
+{% endblock %}

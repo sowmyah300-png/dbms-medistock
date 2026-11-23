@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Reports · MediStock{% endblock %}
+{% block page_heading %}Inventory reports{% endblock %}
+{% block content %}
+<div class="page-intro"><div><p class="eyebrow">DATABASE-DRIVEN INSIGHTS</p><h2 class="section-title">Inventory reports</h2><p class="muted">A live summary of stock health, supplier coverage and movement history.</p></div><button class="btn btn-secondary" type="button" data-print>Print report</button></div>
+<section class="report-summary">
+    <article class="report-stat"><span>Medicine batches</span><strong>{{ overview.medicine_count }}</strong></article>
+    <article class="report-stat"><span>Available units</span><strong>{{ overview.total_units }}</strong></article>
+    <article class="report-stat"><span>Inventory value</span><strong>₹{{ '%.2f'|format(overview.inventory_value) }}</strong></article>
+    <article class="report-stat"><span>Low-stock batches</span><strong class="{{ 'text-warning' if overview.low_stock_count else '' }}">{{ overview.low_stock_count }}</strong></article>
+    <article class="report-stat"><span>Expired batches</span><strong class="{{ 'text-danger' if overview.expired_count else '' }}">{{ overview.expired_count }}</strong></article>
+</section>
+<div class="report-grid">
+    <section class="card">
+        <div class="card-header"><div><p class="eyebrow">REPLENISHMENT</p><h2>Low-stock report</h2></div><span class="count-pill">{{ low_stock|length }}</span></div>
+        {% if low_stock %}<div class="table-responsive"><table class="data-table"><thead><tr><th>Medicine</th><th>Batch</th><th>Quantity</th></tr></thead><tbody>{% for item in low_stock %}<tr><td>{{ item.name }}</td><td>{{ item.batch_number }}</td><td><span class="badge badge-warning">{{ item.quantity }} units</span></td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="inline-empty">No batches at or below {{ low_stock_threshold }} units.</p>{% endif %}
+    </section>
+    <section class="card">
+        <div class="card-header"><div><p class="eyebrow">EXPIRY WATCH</p><h2>Expired medicine report</h2></div><span class="count-pill">{{ expired|length }}</span></div>
+        {% if expired %}<div class="table-responsive"><table class="data-table"><thead><tr><th>Medicine</th><th>Batch</th><th>Expiry date</th><th>Quantity</th></tr></thead><tbody>{% for item in expired %}<tr><td>{{ item.name }}</td><td>{{ item.batch_number }}</td><td class="text-danger">{{ item.expiry_date.strftime('%d %b %Y') }}</td><td>{{ item.quantity }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="inline-empty">No expired medicine batches.</p>{% endif %}
+    </section>
+    <section class="card report-wide">
+        <div class="card-header"><div><p class="eyebrow">SUPPLY NETWORK</p><h2>Supplier report</h2></div><span class="count-pill">{{ suppliers|length }}</span></div>
+        {% if suppliers %}<div class="table-responsive"><table class="data-table"><thead><tr><th>Company</th><th>Contact</th><th>Email</th><th>Contact number</th><th>Medicine batches</th></tr></thead><tbody>{% for item in suppliers %}<tr><td><strong>{{ item.company_name }}</strong></td><td>{{ item.supplier_name }}</td><td><a href="mailto:{{ item.email }}">{{ item.email }}</a></td><td>{{ item.contact_number }}</td><td>{{ item.medicine_count }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="inline-empty">No supplier records yet.</p>{% endif %}
+    </section>
+    <section class="card report-wide">
+        <div class="card-header"><div><p class="eyebrow">AUDIT TRAIL</p><h2>Stock movement history</h2></div><span class="field-help">Latest {{ transactions|length }} transactions</span></div>
+        {% if transactions %}<div class="table-responsive"><table class="data-table"><thead><tr><th>ID</th><th>Medicine / batch</th><th>Movement</th><th>Quantity</th><th>Remarks</th><th>Operator</th><th>Date</th></tr></thead><tbody>{% for item in transactions %}<tr><td class="id-cell">#{{ item.id }}</td><td>{{ item.medicine_name }}<small class="table-subtext">{{ item.batch_number }}</small></td><td><span class="badge {{ 'badge-success' if item.movement == 'IN' else 'badge-info' }}">{{ 'Received' if item.movement == 'IN' else 'Distributed' }}</span></td><td>{{ item.quantity }}</td><td>{{ item.remarks or '—' }}</td><td>{{ item.operator_name or 'Former operator' }}</td><td>{{ item.created_at.strftime('%d %b %Y, %H:%M') }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="inline-empty">No stock movements recorded.</p>{% endif %}
+    </section>
+</div>
+{% endblock %}

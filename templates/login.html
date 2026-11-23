@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Sign in · MediStock{% endblock %}
+{% block auth_content %}
+<section class="auth-card">
+    <div class="form-mark">✚</div>
+    <p class="eyebrow">YOUR INVENTORY, IN FOCUS</p>
+    <h2>Welcome back</h2>
+    <p class="auth-subtitle">Sign in to continue to your workspace.</p>
+    <form method="post" action="{{ url_for('login') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" autocomplete="username" required maxlength="50" placeholder="Enter your username" value="{{ request.form.get('username', '') }}">
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <div class="password-wrapper">
+                <input id="password" name="password" type="password" autocomplete="current-password" required>
+                <button class="toggle-password" type="button" aria-label="Show password" data-password-toggle="password">Show</button>
+            </div>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Sign in <span aria-hidden="true">→</span></button>
+    </form>
+    <p class="auth-footer">New to MediStock? <a href="{{ url_for('register') }}">Create an account</a></p>
+</section>
+{% endblock %}

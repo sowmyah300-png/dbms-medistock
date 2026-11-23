@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Stock management · MediStock{% endblock %}
+{% block page_heading %}Stock management{% endblock %}
+{% block content %}
+<div class="page-intro"><div><p class="eyebrow">RECEIVING &amp; DISTRIBUTION</p><h2 class="section-title">Stock movement</h2><p class="muted">Record incoming supplies or distributions; each change is added to the audit trail.</p></div></div>
+<div class="two-col-grid stock-top-grid">
+    <section class="card form-card">
+        <div class="card-header"><div><p class="eyebrow">QUANTITY ADJUSTMENT</p><h2>Record a movement</h2></div><span class="form-mark small-mark">↕</span></div>
+        {% if medicines %}
+        <form method="post" action="{{ url_for('stock') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="form-group"><label for="medicine_id">Medicine batch <span class="required">*</span></label><select id="medicine_id" name="medicine_id" required><option value="">Choose a batch</option>{% for medicine in medicines %}<option value="{{ medicine.id }}">{{ medicine.name }} · {{ medicine.batch_number }} ({{ medicine.quantity }} units)</option>{% endfor %}</select></div>
+            <div class="form-grid">
+                <div class="form-group"><label for="movement">Movement type <span class="required">*</span></label><select id="movement" name="movement" required><option value="IN">Stock received (+)</option><option value="OUT">Stock distributed (−)</option></select></div>
+                <div class="form-group"><label for="quantity">Quantity <span class="required">*</span></label><input id="quantity" name="quantity" type="number" min="1" step="1" required placeholder="e.g. 25"></div>
+            </div>
+            <div class="form-group"><label for="remarks">Remarks</label><textarea id="remarks" name="remarks" rows="2" maxlength="500" placeholder="Optional delivery or distribution note"></textarea></div>
+            <button class="btn btn-primary" type="submit">Save stock movement</button>
+        </form>
+        {% else %}<div class="empty-state compact-empty"><strong>Add a medicine first</strong><p>A stock movement requires an existing medicine batch.</p><a class="btn btn-primary" href="{{ url_for('add_medicine') }}">Add medicine</a></div>{% endif %}
+    </section>
+    <section class="card alerts-card">
+        <div class="card-header"><div><p class="eyebrow">NEEDS ATTENTION</p><h2>Stock alerts</h2></div><span class="count-pill">{{ alerts|length }}</span></div>
+        {% if alerts %}
+        <div class="alert-list">{% for item in alerts %}
+            <div class="alert-item {{ 'alert-expired' if item.expiry_date < today else 'alert-low' }}">
+                <span class="alert-symbol">{{ '◷' if item.expiry_date < today else '!' }}</span>
+                <div><strong>{{ item.name }}</strong><small>{{ item.batch_number }} · {{ item.quantity }} units</small></div>
+                <span class="badge {{ 'badge-danger' if item.expiry_date < today else 'badge-warning' }}">{{ 'Expired' if item.expiry_date < today else 'Low stock' }}</span>
+            </div>
+        {% endfor %}</div>
+        {% else %}<div class="all-clear"><span>✓</span><strong>All clear</strong><p>No low-stock or expired medicine batches.</p></div>{% endif %}
+        <p class="field-help alert-footnote">Low-stock alert: {{ low_stock_threshold }} units or fewer.</p>
+    </section>
+</div>
+<section class="card section-gap">
+    <div class="card-header"><div><p class="eyebrow">AUDIT TRAIL</p><h2>Recent stock transactions</h2></div><span class="field-help">Showing latest {{ transactions|length }}</span></div>
+    {% if transactions %}
+    <div class="table-responsive"><table class="data-table"><thead><tr><th>Transaction</th><th>Medicine / batch</th><th>Movement</th><th>Quantity</th><th>Remarks</th><th>Operator</th><th>Date and time</th></tr></thead><tbody>
+    {% for item in transactions %}<tr><td class="id-cell">#{{ item.id }}</td><td><strong>{{ item.medicine_name }}</strong><small class="table-subtext">{{ item.batch_number }}</small></td><td><span class="badge {{ 'badge-success' if item.movement == 'IN' else 'badge-info' }}">{{ 'Received' if item.movement == 'IN' else 'Distributed' }}</span></td><td>{{ item.quantity }} units</td><td>{{ item.remarks or '—' }}</td><td>{{ item.operator_name or 'Former operator' }}</td><td>{{ item.created_at.strftime('%d %b %Y, %H:%M') }}</td></tr>{% endfor %}
+    </tbody></table></div>
+    {% else %}<div class="empty-state compact-empty"><strong>No transactions recorded</strong><p>Incoming and distributed quantities will be listed here.</p></div>{% endif %}
+</section>
+{% endblock %}
