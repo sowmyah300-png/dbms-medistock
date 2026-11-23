@@ -1,3 +1,4 @@
+@'
 from datetime import date
 import pandas as pd
 import streamlit as st
@@ -10,7 +11,6 @@ db.init_pool()
 if "user" not in st.session_state:
     st.session_state.user = None
 
-# --- Login / Register ---
 if st.session_state.user is None:
     st.title("💊 MediStock — Medical Inventory System")
     tab1, tab2 = st.tabs(["Login", "Register"])
@@ -44,14 +44,12 @@ if st.session_state.user is None:
                     st.error(f"Registration failed: {e}")
     st.stop()
 
-# --- Sidebar Navigation ---
 st.sidebar.title(f"👋 {st.session_state.user['full_name']}")
 page = st.sidebar.radio("Navigation", ["Dashboard", "Medicines", "Stock In / Out", "Suppliers"])
 if st.sidebar.button("Logout"):
     st.session_state.user = None
     st.rerun()
 
-# --- 1. Dashboard ---
 if page == "Dashboard":
     st.header("Inventory Dashboard")
     meds = db.fetch_all("SELECT * FROM medicines")
@@ -70,7 +68,6 @@ if page == "Dashboard":
     txns = db.fetch_all("SELECT * FROM stock_transactions ORDER BY id DESC LIMIT 10")
     st.dataframe(pd.DataFrame(txns), use_container_width=True)
 
-# --- 2. Medicines ---
 elif page == "Medicines":
     st.header("Medicines & Batches")
     with st.expander("➕ Add New Medicine"):
@@ -101,7 +98,6 @@ elif page == "Medicines":
     meds = db.fetch_all("SELECT * FROM medicines ORDER BY id DESC")
     st.dataframe(pd.DataFrame(meds), use_container_width=True)
 
-# --- 3. Stock Movements ---
 elif page == "Stock In / Out":
     st.header("Record Stock Movement")
     meds = db.fetch_all("SELECT id, name, batch_number, quantity FROM medicines")
@@ -130,7 +126,6 @@ elif page == "Stock In / Out":
                     st.success("Stock updated!")
                     st.rerun()
 
-# --- 4. Suppliers ---
 elif page == "Suppliers":
     st.header("Supplier Directory")
     with st.expander("➕ Add Supplier"):
@@ -150,3 +145,9 @@ elif page == "Suppliers":
 
     sups = db.fetch_all("SELECT * FROM suppliers ORDER BY id DESC")
     st.dataframe(pd.DataFrame(sups), use_container_width=True)
+'@ | Set-Content -Encoding UTF8 streamlit_app.py
+
+Add-Content requirements.txt "`nstreamlit`npandas"
+git add streamlit_app.py requirements.txt
+git commit -m "Add streamlit_app.py and dependencies"
+git push origin main
