@@ -1,2 +1,5 @@
-pandas
+Flask
+Werkzeug
+mysql-connector-python
 streamlit
+pandas
